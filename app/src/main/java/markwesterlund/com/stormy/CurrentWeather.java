@@ -16,6 +16,80 @@ public class CurrentWeather {
     private String mSummary;
     private String mTimezone;
 
+
+    public int getTempColor(){
+
+        int color = 0xff000000;
+
+        if(mTemperature >= 100) {
+            color = 0xffff0000;
+        } else if(mTemperature > 95 && mTemperature < 100) {
+            color = 0xffff2400;
+        }
+        else if(mTemperature > 90 && mTemperature < 95) {
+            color = 0xffff3500;
+        }
+        else if(mTemperature > 85 && mTemperature < 90) {
+            color = 0xffff5a00;
+        }
+        else if(mTemperature > 80 && mTemperature < 85) {
+            color = 0xffff7000;
+        }
+        else if(mTemperature > 75 && mTemperature < 80) {
+            color = 0xffff8d00;
+        }
+        else if(mTemperature > 70 && mTemperature < 75) {
+            color = 0xffffa300;
+        }
+        else if(mTemperature > 65 && mTemperature < 70) {
+            color = 0xffffc200;
+        }
+        else if(mTemperature > 60 && mTemperature < 65) {
+            color = 0xff77dd00;
+        }
+        else if(mTemperature > 55 && mTemperature < 60) {
+            color = 0xff00a300;
+        }
+        else if(mTemperature > 50 && mTemperature < 55) {
+            color = 0xff007900;
+        }
+        else if(mTemperature > 45 && mTemperature < 50) {
+            color = 0xff00793a;
+        }
+        else if(mTemperature > 40 && mTemperature < 45) {
+            color = 0xff005350;
+        }
+        else if(mTemperature > 35 && mTemperature < 40) {
+            color = 0xff003161;
+        }
+        else if(mTemperature > 30 && mTemperature < 35) {
+            color = 0xff000083;
+        }
+        else if(mTemperature > 25 && mTemperature < 30) {
+            color = 0xff0024b9;
+        }
+        else if(mTemperature > 20 && mTemperature < 25) {
+            color = 0xff008aff;
+        }
+        else if(mTemperature > 15 && mTemperature < 20) {
+            color = 0xff00c0ff;
+        }
+        else if(mTemperature > 10 && mTemperature < 15) {
+            color = 0xff86c0ff;
+        }
+        else if(mTemperature > 5 && mTemperature < 10) {
+            color = 0xffc0c0ff;
+        }
+        else if(mTemperature < 5) {
+            color = 0xffffc0ff;
+        }
+
+
+        return color;
+
+    }
+
+
     public String getTimezone() {
         return mTimezone;
     }

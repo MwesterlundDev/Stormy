@@ -1,9 +1,15 @@
 package markwesterlund.com.stormy;
 
 import android.content.Context;
+import android.content.IntentSender;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationListener;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Looper;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +21,17 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.Api;
+import com.google.android.gms.common.api.BaseImplementation;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.Result;
+import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.common.api.d;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.OkHttpClient;
@@ -25,16 +42,24 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
+
 
     public static final String TAG = MainActivity.class.getSimpleName();
+    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
     private CurrentWeather mCurrentWeather;
+    private GoogleApiClient mGoogleApiClient;
+    private LocationRequest mLocationRequest;
 
     private double mLat;
     private double mLong;
@@ -47,6 +72,7 @@ public class MainActivity extends ActionBarActivity {
     @InjectView(R.id.iconImageView) ImageView mIconImageView;
     @InjectView(R.id.refreshImageView) ImageView mRefreshImageView;
     @InjectView(R.id.progressBar) ProgressBar mProgressBar;
+    @InjectView(R.id.mainLayout) View mRelativeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,8 +82,20 @@ public class MainActivity extends ActionBarActivity {
 
         mProgressBar.setVisibility(View.INVISIBLE);
 
-        mLat = 37.8267;
-        mLong = -122.432;
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+
+
+
+        //Create the location RequestObject
+
+        mLocationRequest = mLocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
+                .setInterval(60 * 1000) // 60 Seconds
+                .setFastestInterval(1 * 1000); // 1 Second
 
 
         mRefreshImageView.setOnClickListener(new View.OnClickListener() {
@@ -69,6 +107,22 @@ public class MainActivity extends ActionBarActivity {
 
         getForecast(mLat, mLong );
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(mGoogleApiClient.isConnected()){
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, (com.google.android.gms.location.LocationListener) this);
+
+            mGoogleApiClient.disconnect();
+        }
     }
 
     private void getForecast(double latitude, double longitude) {
@@ -154,6 +208,11 @@ public class MainActivity extends ActionBarActivity {
 
     private void updateDisplay() {
         mTemperatureLabel.setText(mCurrentWeather.getTemperature() + "");
+
+        mRelativeLayout.setBackgroundColor(mCurrentWeather.getTempColor());
+
+
+
         mTimeLabel.setText("At " + mCurrentWeather.getFormattedTime() + " it will be");
         mHumidityValue.setText(mCurrentWeather.getHumidity() + "");
         mPrecipValue.setText(mCurrentWeather.getPrecipChance() + "%" );
@@ -208,4 +267,65 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
+    @Override
+    public void onConnected(Bundle bundle) {
+        Log.i(TAG, "Location services connected.");
+        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+        if(location == null){
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, (com.google.android.gms.location.LocationListener) this);
+        }
+        else
+        {
+            handleNewLocation(location);
+        }
+    }
+
+    private void handleNewLocation(Location location) {
+        Log.d(TAG, location.toString());
+        mLat = location.getLatitude();
+        mLong = location.getLongitude();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.i(TAG, "Location services suspended. Please reconnect.");
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+        if(connectionResult.hasResolution()) {
+            try{
+                // Start an activity that tries to resolve this error
+                connectionResult.startResolutionForResult(this,
+                        CONNECTION_FAILURE_RESOLUTION_REQUEST);
+            } catch (IntentSender.SendIntentException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.i(TAG, "Location Services connection failed with code: " + connectionResult.getErrorCode());
+        }
+
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        handleNewLocation(location);
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
 }
