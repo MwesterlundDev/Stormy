@@ -8,12 +8,14 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -81,8 +83,6 @@ public class MainActivity extends ActionBarActivity implements
     @InjectView(R.id.precipValue) TextView mPrecipValue;
     @InjectView(R.id.summaryLabel) TextView mSummaryLabel;
     @InjectView(R.id.iconImageView) ImageView mIconImageView;
-    @InjectView(R.id.refreshImageView) ImageView mRefreshImageView;
-    @InjectView(R.id.progressBar) ProgressBar mProgressBar;
     @InjectView(R.id.mainLayout) SwipeRefreshLayout mRelativeLayout;
     @InjectView(R.id.locationLabel) TextView mLocationLabel;
     @InjectView(R.id.feelsLikeLabel) TextView mFeelsLikeLabel;
@@ -93,7 +93,7 @@ public class MainActivity extends ActionBarActivity implements
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
 
-        mProgressBar.setVisibility(View.INVISIBLE);
+
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -121,14 +121,29 @@ public class MainActivity extends ActionBarActivity implements
                 .setFastestInterval(1 * 1000); // 1 Second
 
 
-        mRefreshImageView.setOnClickListener(new View.OnClickListener() {
+        mRelativeLayout.setColorSchemeColors(android.R.color.holo_blue_dark, android.R.color.holo_blue_light, android.R.color.holo_green_light, android.R.color.holo_green_light);
+
+        mRelativeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public void onClick(View v) {
-                getForecast(mLat, mLong );
+            public void onRefresh() {
+
+                new Handler().postDelayed(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        //mRelativeLayout.measure(10, 10);
+                        //mRelativeLayout.setRefreshing(true);
+                        getForecast(mLat, mLong);
+                    }
+                }, 1000);
+
+
             }
         });
 
-        getForecast(mLat, mLong );
+
+
+        getForecast(mLat, mLong);
 
     }
 
@@ -229,6 +244,7 @@ public class MainActivity extends ActionBarActivity implements
                         @Override
                         public void run() {
                             toggleRefresh();
+
                         }
                     });
 
@@ -278,13 +294,9 @@ public class MainActivity extends ActionBarActivity implements
     }
 
     private void toggleRefresh() {
-        if (mProgressBar.getVisibility() == View.INVISIBLE) {
-            mProgressBar.setVisibility(View.VISIBLE);
-            mRefreshImageView.setVisibility(View.INVISIBLE);
-        } else {
-            mProgressBar.setVisibility(View.INVISIBLE);
-            mRefreshImageView.setVisibility(View.VISIBLE);
-        }
+
+
+        mRelativeLayout.setRefreshing(false);
     }
 
     private void updateDisplay() {

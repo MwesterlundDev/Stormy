@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 /**
- * Created by mark on 1/13/15.
+ * Created by Mark Westerlund on 1/13/15.
  */
 public class DailyWeather extends CurrentWeather {
 
@@ -47,7 +47,7 @@ public class DailyWeather extends CurrentWeather {
     }
 
     public String getFormattedTime() {
-        SimpleDateFormat formatter = new SimpleDateFormat("h:mm a");
+        SimpleDateFormat formatter = new SimpleDateFormat("EEE, M/d");
         formatter.setTimeZone(TimeZone.getTimeZone(getTimezone()));
         Date dateTime = new Date(getTime() * 1000);
         String timeString = formatter.format(dateTime);
