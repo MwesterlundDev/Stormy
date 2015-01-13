@@ -11,10 +11,15 @@ public class CurrentWeather {
     private String mIcon;
     private long mTime;
     private double mTemperature;
+
+
+
+    private double mApparentTemperature;
     private double mHumidity;
     private double mPrecipChance;
     private String mSummary;
     private String mTimezone;
+
 
 
     public int getTempColor(){
@@ -192,5 +197,13 @@ public class CurrentWeather {
 
     public void setSummary(String summary) {
         mSummary = summary;
+    }
+
+    public int getApparentTemperature() {
+        return (int)Math.round(mApparentTemperature);
+    }
+
+    public void setApparentTemperature(double apparentTemperature) {
+        mApparentTemperature = apparentTemperature;
     }
 }
